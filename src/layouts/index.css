@@ -1,0 +1,26 @@
+
+.header {
+  font-family: Georgia, sans-serif;
+  background: darkslateblue;
+  display: flex;
+  align-items: center;
+  color: white;
+}
+
+.banner {
+  font-size: 2.5rem;
+  line-height: 1;
+  font-weight: normal;
+  padding: 1rem;
+  margin: 0;
+}
+
+.link {
+  color: white;
+  text-decoration: none;
+}
+
+.nav {
+  composes: link;
+  padding: 1rem;
+}
