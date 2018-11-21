@@ -7,7 +7,7 @@ export const dva = {
       console.error(err.message);
     },
     initialState: {
-      martin: [1,2,3],
+      martin: [3,2,1],
     },
   },
 };

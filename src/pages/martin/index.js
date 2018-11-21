@@ -1,3 +1,4 @@
+import styles from './index.css';
 import { connect } from 'dva';
 
 function Page({ dispatch, martin }) {
@@ -5,7 +6,7 @@ function Page({ dispatch, martin }) {
     dispatch({ type: 'martin/push', data: martin.length + 1 });
   }
   return (
-    <div style={{padding: "2rem"}}>
+    <div className={styles.frame}>
       <div>
         List of Data:
         <button onClick={push}>Push</button>
