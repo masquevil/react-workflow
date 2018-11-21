@@ -6,6 +6,8 @@ export const dva = {
       err.preventDefault();
       console.error(err.message);
     },
+    initialState: {
+      martin: [1,2,3],
+    },
   },
 };
-
