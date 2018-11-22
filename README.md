@@ -13,10 +13,10 @@
 			- [页面代码组织](#页面代码组织)
 			- [全局复用](#全局复用)
 		- [页面代码结构的说明及示例](#页面代码结构的说明及示例)
-			- [`index.js`](#indexjs)
-			- [`index.css`](#indexcss)
-			- [`model.js` or `models/**.js`](#modeljs-or-modelsjs)
-				- [示例](#示例)
+			- [index.js](#indexjs)
+			- [index.css](#indexcss)
+			- [model.js 或者 models/**.js](#modeljs-或者-modelsjs)
+			- [示例](#示例)
 	- [基础功能](#基础功能)
 		- [路由介绍](#路由介绍)
 		- [链接跳转](#链接跳转)
@@ -34,7 +34,7 @@
 
 对于想要轻松上手的玩家来说，只要阅读本文档就足够了。而对于使用过多次的老玩家，想要 研究一些原理/做一些定制和优化 的，还可以去了解下面这些东西：
 
-简单介绍一下：umi 是一个以路由为基础的，可插拔的企业级 react 应用框架。dva 是一个基于 [redux](https://github.com/reduxjs/redux) 和 [redux-saga](https://github.com/redux-saga/redux-saga) 的数据流方案，同时内置了 [react-router](https://github.com/ReactTraining/react-router) 和 [fetch](https://github.com/github/fetch)。
+简单介绍一下：[umi](https://umijs.org/) 是一个以路由为基础的，可插拔的企业级 react 应用框架。[dva](https://dvajs.com/) 是一个基于 [redux](https://github.com/reduxjs/redux) 和 [redux-saga](https://github.com/redux-saga/redux-saga) 的数据流方案，同时内置了 [react-router](https://github.com/ReactTraining/react-router) 和 [fetch](https://github.com/github/fetch)。
 
 
 ## 目录结构
@@ -117,11 +117,9 @@ src
 
 ### 页面代码结构的说明及示例
 
-#### `index.js`
+#### index.js
 
 页面的入口，`export default` 返回页面的 render 函数。
-
-示例：
 
 ```javascript
 export default function() {
@@ -131,11 +129,9 @@ export default function() {
 }
 ```
 
-#### `index.css`
+#### index.css
 
 建议参照 `martin/index.js` 的例子，使用 [css modules](https://segmentfault.com/a/1190000010301977) 引入 `martin/index.css`。
-
-示例：
 
 ```javascript
 import styles from './index.css';
@@ -147,7 +143,7 @@ export default function() {
 }
 ```
 
-#### `model.js` or `models/**.js`
+#### model.js 或者 models/**.js
 
 这是页面级的 [dva model](https://dvajs.com/guide/concepts.html#models) 文件。如果要使用全局的 dva model，请放在 `src/models` 目录下。
 
@@ -165,6 +161,7 @@ dva 的数据流：数据的改变发生通常是通过用户交互行为或者�
     - 表示 model 的状态数据，是全局 state 的一个片段
     - 对应 redux 的 state
     - 可以是任何数据类型，通常表现为一个 js 对象
+    - 不要将所有的数据都放到 state 里，只放会被修改的数据
 3. `reducers`
     - 修改 state 的唯一方式，但不直接修改 states，必须是纯函数
     - `type Reducer<S, A> = (state: S, action: A) => S`
@@ -173,7 +170,9 @@ dva 的数据流：数据的改变发生通常是通过用户交互行为或者�
 4. `effects`
     - 被称为副作用，最常见的就是异步操作
     - 之所以叫副作用是因为它使得我们的函数变得不纯，同样的输入不一定获得同样的输出
+    - 格式为 `*(action, effects) => void` 或 `[*(action, effects) => void, { type }]`。
     - 对应 [redux-saga](http://superraytin.github.io/redux-saga-in-chinese)，将异步转成同步写法，从而将 effects 转为纯函数
+    - 例子可以看 [dva 测试用例](https://github.com/dvajs/dva/blob/master/packages/dva-core/test/effects.test.js) 和 [redux-saga api](https://redux-saga-in-chinese.js.org/docs/api/)
 5. `subscriptions`
     - 一种从 源 获取数据的方法，它来自于 elm
     - 语义是订阅，用于订阅一个数据源，然后根据条件 dispatch 需要的 action。
@@ -183,18 +182,24 @@ dva 的数据流：数据的改变发生通常是通过用户交互行为或者�
 
 1. `actions`
     - 一个普通 javascript 对象，通过 dispatch 函数调用一个 action，是改变 State 的唯一途径
+    - `type AsyncAction = any`
     - action 必须带有 type 属性指明具体的行为，其它字段可以自定义
     - 对应 [redux 的 actions](https://redux.js.org/basics/actions)
-    - dva 的说明详见 [Action](https://dvajs.com/guide/concepts.html#action)
+    - 要发起一个 action 需要使用 dispatch 函数
 2. `dispatch`
     - 用于触发 action 的函数，action 只描述了一个行为，而 dipatch 可以看作是触发这个行为的方式
+    - `type dispatch = (a: Action) => Action`
     - 对应 [redux 的 dispatch](https://redux.js.org/basics/store#dispatching-actions)
-    - dva 的说明详见 [dispatch 函数](https://dvajs.com/guide/concepts.html#dispatch-%E5%87%BD%E6%95%B0)
+    - connect Model 的组件通过 props 可以访问到 dispatch
+3. actions、dispatch、reducer 的关系
+    - action 只描述了一个行为，而 dipatch 可以看作是触发这个行为的方式，而 Reducer 则是描述如何改变数据的
 
-##### 示例
+#### 示例
 
 ```javascript
 // martin/model.js
+import request from 'some ajax library';    // 用来展示 effects
+import key from 'keymaster';                // 用来展示 subscriptions
 export default {
   namespace: 'martin',
   state: {
@@ -204,11 +209,25 @@ export default {
     push(state, { data: data }) {
       return state.data.concat(data);
     },
+    up(state) {
+      return state.data.map(value => value + 1);
+    },
+  },
+  effects: {
+    *remotePush(action, { put, call }) {
+      const data = yield call(request, '/api/url', 'param', 'param');
+      yield put({ type: 'push', data: data });
+    },
+  },
+  subscriptions: {
+    keyEvent({dispatch}) {
+      key('⌘+up, ctrl+up', () => { dispatch({ type: 'up' }); });
+    },
   },
 };
 
 // martin/index.js
-function Page() {
+function Page({ dispatch, martin }) {
   function push(){
     dispatch({ type: 'martin/push', data: Math.random() });
   }
@@ -236,9 +255,13 @@ umi 会根据 `pages` 目录自动生成路由配置，称为“约定式路由�
 
 除此之外，umi 还提供了其它约定方式，以及配置式路由等支持。详见 [umi 路由](https://umijs.org/zh/guide/router.html)。
 
+> 观察发现，`pages` 目录下 `_` 开头的目录不会被视为路由，我们可以借助这一特性来写局部功能
+>
+> 但这一特性并没有官方文档支持
+
 ### 链接跳转
 
-```jsx
+```javascript
 /* 声明式 */
 import Link from 'umi/link';
 export default () => (
