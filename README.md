@@ -89,22 +89,20 @@ src
 
 ## 开始开发
 
-以下操作均默认在 `src` 目录下进行
+**以下操作默认均在页面目录下进行**
 
 ### 新增一个页面
 
 #### 页面代码组织
 
-1. 新建与 url 相对应的目录作为页面目录（[路由介绍](#路由介绍)），以下操作均在页面目录下进行
+1. 新建与 url 相对应的目录作为页面目录（[路由介绍](#路由介绍)）
 2. 新建 `index.js` 编写页面的 `render` 函数
     - 我们建议所有的页面都是目录下的 `index.js` 而非 `[pagename].js`
 3. 如果需要样式，新建 `index.css`，然后按照下述说明引入样式
-4. 状态管理（Redux）相关的代码放到 `model.js` 或 `models/**.js` 中
-5. 可复用的组件，放到 `_components` 目录下
-6. 插件、可复用的服务，放到 `_services` 目录下
-7. 简单可复用的工具类，放到 `_utils` 目录下
-
-> 5 - 7 中 `_` 开头的私有目录是我猜的，官方文档上并没有提及。如果对此存有疑虑，请尽量按照[全局复用](#全局复用)的思路，使用 `src` 根目录管理这些代码。
+4. 状态管理（Redux）相关的代码放到 `model.js` 或 `models/` 目录下
+5. 可复用的组件，放到 `components/` 目录下
+6. 插件、可复用的服务，放到 `services/` 目录下
+7. 简单可复用的工具类，放到 `utils/` 目录下
 
 #### 全局复用
 
@@ -147,8 +145,6 @@ export default function() {
 
 这是页面级的 [dva model](https://dvajs.com/guide/concepts.html#models) 文件。如果要使用全局的 dva model，请放在 `src/models` 目录下。
 
-按照 umi 的[官方说明](https://umijs.org/zh/guide/with-dva.html#model-%E6%B3%A8%E5%86%8C)，这些 model 会被自动注册。但由于一个 bug: [issues#1483](https://github.com/umijs/umi/issues/1483)，model 的 `namespace` 字段不能省略。
-
 详细介绍请看 [Dva 概念](https://dvajs.com/guide/concepts.html)，这里对 model 内容做一个概述。
 
 dva 的数据流：数据的改变发生通常是通过用户交互行为或者浏览器行为（如路由跳转等）触发的，当此类行为会改变数据的时候可以通过 dispatch 发起一个 action，如果是同步行为会直接通过 Reducers 改变 State ，如果是异步行为（副作用）会先触发 Effects 然后流向 Reducers 最终改变 State。可以看出就是很纯粹的单向数据流。
@@ -157,6 +153,9 @@ dva 的数据流：数据的改变发生通常是通过用户交互行为或者�
 
 1. `namespace`
     - 表示在全局 state 上的 key
+    - 按照 umi 的[官方说明](https://umijs.org/zh/guide/with-dva.html#model-%E6%B3%A8%E5%86%8C)，model 会被自动注册
+    - 由于一个 bug: [issues#1483](https://github.com/umijs/umi/issues/1483)，本字段不能省略
+    - 另一方面，为了避免命名冲突和混淆，本字段也不建议省略
 2. `state`
     - 表示 model 的状态数据，是全局 state 的一个片段
     - 对应 redux 的 state

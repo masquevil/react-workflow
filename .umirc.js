@@ -6,11 +6,16 @@ export default {
     ['umi-plugin-react', {
       antd: true,
       dva: true,
-      dynamicImport: true,
+      dynamicImport: { webpackChunkName: true },
       title: 'demo-umi',
       dll: true,
       routes: {
-        exclude: [],
+        exclude: [
+          /models\//,
+          /components\//,
+          /services\//,
+          /utils\//,
+        ],
       },
       hardSource: true,
     }],
