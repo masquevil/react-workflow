@@ -10,16 +10,19 @@
 		- [生产环境](#生产环境)
 	- [开始开发](#开始开发)
 		- [新增一个页面](#新增一个页面)
-			- [页面代码组织](#页面代码组织)
-			- [全局复用](#全局复用)
-		- [页面代码结构的说明及示例](#页面代码结构的说明及示例)
-			- [index.js](#indexjs)
-			- [index.css](#indexcss)
-			- [model.js 或者 models/**.js](#modeljs-或者-modelsjs)
-			- [示例](#示例)
-	- [基础功能](#基础功能)
+		- [加入样式文件](#加入样式文件)
+		- [使用 model 做状态管理](#使用-model-做状态管理)
+		- [发送 Ajax 请求](#发送-ajax-请求)
+	- [目录结构](#目录结构)
 		- [路由介绍](#路由介绍)
-		- [链接跳转](#链接跳转)
+		- [页面代码组织](#页面代码组织)
+		- [全局复用](#全局复用)
+	- [基础功能（API）](#基础功能api)
+		- [使用 react-router](#使用-react-router)
+		- [index.js](#indexjs)
+		- [使用 model](#使用-model)
+			- [示例](#示例)
+		- [使用 axios 做 Ajax](#使用-axios-做-ajax)
 		- [mock 数据](#mock-数据)
 
 <!-- /TOC -->
@@ -89,37 +92,14 @@ src
 
 ## 开始开发
 
-**以下操作默认均在页面目录下进行**
+- 以下操作默认均在页面目录下进行
 
 ### 新增一个页面
 
-#### 页面代码组织
-
-1. 新建与 url 相对应的目录作为页面目录（[路由介绍](#路由介绍)）
-2. 新建 `index.js` 编写页面的 `render` 函数
-    - 我们建议所有的页面都是目录下的 `index.js` 而非 `[pagename].js`
-3. 如果需要样式，新建 `index.css`，然后按照下述说明引入样式
-4. 状态管理（Redux）相关的代码放到 `model.js` 或 `models/` 目录下
-5. 可复用的组件，放到 `components/` 目录下
-6. 插件、可复用的服务，放到 `services/` 目录下
-7. 简单可复用的工具类，放到 `utils/` 目录下
-
-#### 全局复用
-
-将全局复用的功能，提取到 `src` 根目录下，包括：
-
-- `/src/models`
-- `/src/components`
-- `/src/services`
-- `/src/utils`
-
-### 页面代码结构的说明及示例
-
-#### index.js
-
-页面的入口，`export default` 返回页面的 render 函数。
+新建与 url 相对应的目录作为 **页面目录** （[路由介绍](#路由介绍)），在 **页面目录** 下新建 `index.js`。
 
 ```javascript
+// index.js
 export default function() {
   return (
     <div>Hello world!</div>
@@ -127,11 +107,19 @@ export default function() {
 }
 ```
 
-#### index.css
+### 加入样式文件
 
-建议参照 `martin/index.js` 的例子，使用 [css modules](https://segmentfault.com/a/1190000010301977) 引入 `martin/index.css`。
+新建 `index.(css|less|...)`，并在 `index.js` 中导入。
+
+- 建议参照 `martin/index.js` 的例子，使用 [css modules](https://segmentfault.com/a/1190000010301977) 引入样式文件。
+
+```css
+/* index.css */
+.welcome { font-size: 28px; color: cyan; }
+```
 
 ```javascript
+// index.js
 import styles from './index.css';
 
 export default function() {
@@ -141,11 +129,122 @@ export default function() {
 }
 ```
 
-#### model.js 或者 models/**.js
+### 使用 model 做状态管理
 
-这是页面级的 [dva model](https://dvajs.com/guide/concepts.html#models) 文件。如果要使用全局的 dva model，请放在 `src/models` 目录下。
+新建 `model.js` 或 `models/xxx.js`，并在 `index.js` 中 `connect` 起来。
 
-详细介绍请看 [Dva 概念](https://dvajs.com/guide/concepts.html)，这里对 model 内容做一个概述。
+```javascript
+// model.js
+export default {
+  namespace: 'martin',
+  state: 'Hello Martin State!',
+  reducers: { ... },
+  effects: { ... },
+  subscriptions: { ... },
+};
+```
+
+```javascript
+// index.js
+function Page({ dispatch, martin }) {
+  return (
+    <div>{ martin }</div>
+  );
+}
+export default connect(({ martin }) => ({ martin }))(Page);
+```
+
+### 发送 Ajax 请求
+
+Ajax 请求通常在 model 的 effects 中发送。
+
+```javascript
+// model.js
+import api from '@/services/api';
+
+export default {
+  // ...
+  effects: {
+    *fetch(action, effects) {
+      const response = yield effects.call(api.get, '/api/fetch', {});
+      yield effects.put({ ... });
+    }
+  },
+};
+```
+
+## 目录结构
+
+### 路由介绍
+
+umi 会根据 `pages` 目录自动生成路由配置，称为“约定式路由”。举例：
+
+- `page/users/index.js` -> `/users/`
+- `page/users/list.js` -> `/users/list`
+- 我们建议所有的页面都是目录下的 `index.js` 而非 `[pagename].js`
+
+除此之外，umi 还提供了其它约定方式，以及配置式路由等支持。详见 [umi 路由](https://umijs.org/zh/guide/router.html)。
+
+### 页面代码组织
+
+1. **页面目录** 是与 url 相对应的目录（[路由介绍](#路由介绍)）
+2. `index.js` 暴露页面的函数
+3. `index.(css|less|...)` 存放样式文件
+4. `model.js` 或 `models/xxx.js` 做状态管理（Redux）
+5. `components/` 可复用的组件
+6. `services/` 插件、可复用的服务
+7. `utils/` 简单可复用的工具类
+
+### 全局复用
+
+将全局复用的功能，提取到 `src` 根目录下，包括：
+
+- `/src/global.(js|jsx|tsx)`
+- `/src/global.(css|less|...)`
+- `/src/models/`
+- `/src/components/`
+- `/src/services/`
+- `/src/utils/`
+
+
+## 基础功能（API）
+
+### 使用 react-router
+
+```javascript
+/* 声明式 */
+import Link from 'umi/link';
+export default () => (
+  <Link to="/list">Go to list page</Link>
+);
+
+/* 命令式 */
+import router from 'umi/router';
+function goToListPage() {
+  router.push('/list');
+}
+```
+
+### index.js
+
+页面的入口，`export default` 返回页面的 render 函数。
+
+```javascript
+export default function(props) {
+  return (
+    <div>Hello world!</div>
+  );
+}
+```
+
+`props` 包含以下字段：
+
+1. `dispatch`：redux 的 dispatch
+2. 暂时还不知道用不用得到这些字段：`route` `match` `location` `history` `computedMatch` `children` `staticContext`
+
+### 使用 model
+
+[dva model](https://dvajs.com/guide/concepts.html#models) 是 dva 提供的基于 [redux](https://github.com/reduxjs/redux) 和 [redux-saga](https://github.com/redux-saga/redux-saga) 的数据流方案，详细介绍请看 [Dva 概念](https://dvajs.com/guide/concepts.html)。
 
 dva 的数据流：数据的改变发生通常是通过用户交互行为或者浏览器行为（如路由跳转等）触发的，当此类行为会改变数据的时候可以通过 dispatch 发起一个 action，如果是同步行为会直接通过 Reducers 改变 State ，如果是异步行为（副作用）会先触发 Effects 然后流向 Reducers 最终改变 State。可以看出就是很纯粹的单向数据流。
 
@@ -197,7 +296,7 @@ dva 的数据流：数据的改变发生通常是通过用户交互行为或者�
 
 ```javascript
 // martin/model.js
-import request from 'some ajax library';    // 用来展示 effects
+import request from 'some Ajax library';    // 用来展示 effects
 import key from 'keymaster';                // 用来展示 subscriptions
 export default {
   namespace: 'martin',
@@ -242,36 +341,18 @@ export default connect((state) => ({
 }))(Page);
 ```
 
+### 使用 axios 做 Ajax
 
-## 基础功能
-
-### 路由介绍
-
-umi 会根据 `pages` 目录自动生成路由配置，称为“约定式路由”。举例：
-
-- `page/users/index.js` -> `/users/`
-- `page/users/list.js` -> `/users/list`
-
-除此之外，umi 还提供了其它约定方式，以及配置式路由等支持。详见 [umi 路由](https://umijs.org/zh/guide/router.html)。
-
-> 观察发现，`pages` 目录下 `_` 开头的目录不会被视为路由，我们可以借助这一特性来写局部功能
->
-> 但这一特性并没有官方文档支持
-
-### 链接跳转
+使用请参考 [axios api](https://www.npmjs.com/package/axios#axios-api)。对 axios 的初始化配置请在 `/src/services/api.js` 下进行。
 
 ```javascript
-/* 声明式 */
-import Link from 'umi/link';
-export default () => (
-  <Link to="/list">Go to list page</Link>
-);
-
-/* 命令式 */
-import router from 'umi/router';
-function goToListPage() {
-  router.push('/list');
-}
+// /src/services/api.js
+const apiService = axios.create({
+  baseURL: 'https://demo.com/api/',
+  header: {
+    Soulran: 'handsome',
+  },
+});
 ```
 
 ### mock 数据

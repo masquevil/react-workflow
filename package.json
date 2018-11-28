@@ -8,6 +8,7 @@
     "precommit": "lint-staged"
   },
   "devDependencies": {
+    "axios": "^0.18.0",
     "babel-eslint": "^9.0.0",
     "eslint": "^5.4.0",
     "eslint-config-umi": "^0.1.5",
@@ -21,7 +22,10 @@
     "umi-plugin-react": "^1.1.1"
   },
   "lint-staged": {
-    "*.{js,jsx}": ["eslint --fix", "git add"]
+    "*.{js,jsx}": [
+      "eslint --fix",
+      "git add"
+    ]
   },
   "engines": {
     "node": ">=8.0.0"
