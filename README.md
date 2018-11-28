@@ -100,6 +100,14 @@ src
 
 ```javascript
 // index.js
+import { Component } from 'react';
+export default class Page extends Component {
+  render() {
+    return <div>Hello world!</div>;
+  }
+}
+
+// 你也可以使用函数式组件作为页面
 export default function() {
   return (
     <div>Hello world!</div>
@@ -120,12 +128,13 @@ export default function() {
 
 ```javascript
 // index.js
+import { Component } from 'react';
 import styles from './index.css';
 
-export default function() {
-  return (
-    <div className={styles.welcome}>Hello world!</div>
-  );
+export default class Page extends Component {
+  render() {
+    return <div className={styles.welcome}>Hello world!</div>;
+  }
 }
 ```
 
@@ -146,11 +155,21 @@ export default {
 
 ```javascript
 // index.js
-function Page({ dispatch, martin }) {
-  return (
-    <div>{ martin }</div>
-  );
+import { Component } from 'react';
+import { connect } from 'dva';
+
+@connect(states => ({
+    martin: states.martin
+}))
+class Page extends Component {
+  render() {
+    const { dispatch, martin } = this.props;
+    return <div>{ martin }</div>;
+  }
 }
+export default Page;
+
+// 如果是函数式组件：
 export default connect(({ martin }) => ({ martin }))(Page);
 ```
 
@@ -211,6 +230,8 @@ umi 会根据 `pages` 目录自动生成路由配置，称为“约定式路由�
 
 ### 使用 react-router
 
+API 文档：[umi 路由](https://umijs.org/zh/api/#%E8%B7%AF%E7%94%B1)
+
 ```javascript
 /* 声明式 */
 import Link from 'umi/link';
@@ -227,17 +248,19 @@ function goToListPage() {
 
 ### index.js
 
-页面的入口，`export default` 返回页面的 render 函数。
+页面的入口，`export default` 返回页面组件。
 
 ```javascript
-export default function(props) {
-  return (
-    <div>Hello world!</div>
-  );
+import { Component } from 'react';
+class Page extends Component {
+  render() {
+    return <div>Hello world!</div>;
+  }
 }
+export default Page;
 ```
 
-`props` 包含以下字段：
+`this.props` 包含以下字段：
 
 1. `dispatch`：redux 的 dispatch
 2. 暂时还不知道用不用得到这些字段：`route` `match` `location` `history` `computedMatch` `children` `staticContext`
@@ -325,20 +348,25 @@ export default {
 };
 
 // martin/index.js
-function Page({ dispatch, martin }) {
-  function push(){
-    dispatch({ type: 'martin/push', data: Math.random() });
-  }
-  return (
-    <div>
-      <div>{ martin.data.toString() }</div>
-      <button onClick={push}>Push</button>
-    </div>
-  );
-}
-export default connect((state) => ({
+@connect((state) => ({
   martin: state.martin
-}))(Page);
+}))
+class Page extends React.Component {
+  render() {
+    const { dispatch, martin } = this.props;
+    return (
+      <div>
+        <div>{ martin.data.toString() }</div>
+        <button onClick={ e => { this.push(); } }>Push</button>
+      </div>
+    );
+  }
+
+  push(){
+    this.props.dispatch({ type: 'martin/push', data: Math.random() });
+  }
+}
+export default Page;
 ```
 
 ### 使用 axios 做 Ajax
