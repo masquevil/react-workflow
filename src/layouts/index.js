@@ -1,4 +1,4 @@
-import Fragment from 'react';
+import { Fragment } from 'react';
 import Link from 'umi/link';
 import styles from './index.css';
 
