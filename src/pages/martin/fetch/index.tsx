@@ -8,7 +8,7 @@ import styles from './index.css';
     'martin/fetch': states['martin/fetch']
   };
 })
-class Page extends Component {
+class Page extends Component<any> {
   render(){
     return (
       <div className={styles.frame}>
@@ -16,8 +16,8 @@ class Page extends Component {
           Model Data: { this.props['martin/fetch'] }
         </div>
         <Button.Group>
-          <Button onClick={ e => { this.rand() } }>Rand Model Data</Button>
-          <Button onClick={ (e) => { this.props.dispatch({ type: 'martin/fetch/fetch' }); } }>Fetch Model Data</Button>
+          <Button onClick={ () => { this.rand(); } }>Rand Model Data</Button>
+          <Button onClick={ () => { this.props.dispatch({ type: 'martin/fetch/fetch' }); } }>Fetch Model Data</Button>
         </Button.Group>
       </div>
     );
